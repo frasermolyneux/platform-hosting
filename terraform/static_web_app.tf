@@ -1,4 +1,4 @@
-resource "azurerm_static_site" "swa" {
+resource "azurerm_static_web_app" "swa" {
   for_each = local.static_web_apps
 
   name                = each.value.name
@@ -8,8 +8,12 @@ resource "azurerm_static_site" "swa" {
   sku_tier = each.value.sku_tier
   sku_size = each.value.sku_size
 
-  identity {
-    type = "SystemAssigned"
+  dynamic "identity" {
+    for_each = lower(each.value.sku_tier) == "free" ? [] : [1]
+
+    content {
+      type = "SystemAssigned"
+    }
   }
 
   tags = local.resource_tags

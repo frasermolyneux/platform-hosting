@@ -14,7 +14,7 @@ output "app_service_plans" {
 
 output "static_web_apps" {
   value = {
-    for key, site in azurerm_static_site.swa :
+    for key, site in azurerm_static_web_app.swa :
     key => {
       id                  = site.id
       name                = site.name
