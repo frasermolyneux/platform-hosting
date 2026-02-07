@@ -15,7 +15,7 @@ app_service_plans = {
   default = {
     sku      = "B2"
     os_type  = "Linux"
-    location = "uksouth"
+    location = "swedencentral"
   }
 }
 
