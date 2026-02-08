@@ -11,8 +11,6 @@ locals {
   primary_location       = contains(local.available_locations, lower(var.location)) ? lower(var.location) : local.fallback_location
   primary_resource_group = local.primary_location != null ? local.workload_resource_groups[local.primary_location] : null
 
-  static_web_default_location = contains(local.available_locations, "westeurope") ? "westeurope" : local.primary_location
-
   resource_tags = merge({
     Environment = var.environment,
     Workload    = var.workload_name,
@@ -26,17 +24,6 @@ locals {
       name               = "asp-${var.workload_name}-${var.environment}-${lower(coalesce(plan.location, var.location))}-${key}"
       sku                = plan.sku
       os_type            = plan.os_type
-    }
-  }
-
-  static_web_apps = {
-    for key, app in var.static_web_apps :
-    key => {
-      location           = lower(coalesce(app.location, local.static_web_default_location, var.location))
-      resource_group_key = contains(local.available_locations, lower(coalesce(app.location, local.static_web_default_location, var.location))) ? lower(coalesce(app.location, local.static_web_default_location, var.location)) : local.primary_location
-      name               = "swa-${var.workload_name}-${var.environment}-${lower(coalesce(app.location, local.static_web_default_location, var.location))}-${key}"
-      sku_tier           = app.sku_tier
-      sku_size           = app.sku_size
     }
   }
 }

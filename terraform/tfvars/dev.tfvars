@@ -19,14 +19,6 @@ app_service_plans = {
   }
 }
 
-static_web_apps = {
-  default = {
-    sku_tier = "Free"
-    sku_size = "Free"
-    location = "westeurope"
-  }
-}
-
 tags = {
   Environment = "dev"
   Workload    = "platform-hosting"

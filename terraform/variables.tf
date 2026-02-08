@@ -43,16 +43,6 @@ variable "app_service_plans" {
   default = {}
 }
 
-variable "static_web_apps" {
-  description = "Static Web Apps keyed by purpose"
-  type = map(object({
-    sku_tier = string
-    sku_size = string
-    location = optional(string)
-  }))
-  default = {}
-}
-
 variable "tags" {
   description = "Optional resource tags"
   type        = map(string)

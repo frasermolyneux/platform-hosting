@@ -1,6 +1,6 @@
 # Development Workflows
 
-Terraform-only repository for platform-hosting shared App Service plans and Static Web Apps. Branch strategy, triggers, and flows below.
+Terraform-only repository for platform-hosting shared App Service plans. Branch strategy, triggers, and flows below.
 
 ## Branch Strategy & Triggers
 

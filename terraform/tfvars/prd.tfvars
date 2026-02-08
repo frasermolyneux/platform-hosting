@@ -19,14 +19,6 @@ app_service_plans = {
   }
 }
 
-static_web_apps = {
-  default = {
-    sku_tier = "Standard"
-    sku_size = "Standard"
-    location = "westeurope"
-  }
-}
-
 tags = {
   Environment = "prd"
   Workload    = "platform-hosting"
