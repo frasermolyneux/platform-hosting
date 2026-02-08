@@ -14,7 +14,7 @@
 
 ## Overview
 
-Shared App Service plans and Azure Static Web Apps for downstream workloads, provisioned with Terraform and GitHub Actions. Configuration is map-driven so future environments can add additional plans or static sites without restructuring the code.
+Shared App Service plans for downstream workloads, provisioned with Terraform and GitHub Actions. Configuration is map-driven so future environments can add additional plans without restructuring the code.
 
 ---
 
