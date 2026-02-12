@@ -40,7 +40,7 @@ terraform -chdir=terraform plan -var-file=tfvars/dev.tfvars
 ## CI/CD Workflows
 
 - `build-and-test.yml` – Feature branch pushes trigger a Dev Terraform plan.
-- `pr-verify.yml` – PRs to main run a Dev plan; add `run-prd-plan` label for Prd plan.
+- `pr-verify.yml` – PRs run a Dev plan; add `run-prd-plan` label for Prd plan.
 - `deploy-dev.yml` – Manual dispatch for Dev plan and apply.
 - `deploy-prd.yml` – Push to main, weekly schedule, or manual; runs Dev apply then Prd apply.
 - `destroy-development.yml` / `destroy-environment.yml` – Teardown workflows.
