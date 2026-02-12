@@ -6,3 +6,6 @@ terraform.tfstate.*
 *.tfvars.backup
 *.tfplan
 crash.log
+
+# Shared Copilot configuration checked out during copilot-setup-steps
+.github-copilot/
