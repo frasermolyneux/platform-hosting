@@ -19,58 +19,11 @@ jobs:
       is_dependabot: ${{ steps.evaluate.outputs.is_dependabot }}
       auto_merge_allowed: ${{ steps.evaluate.outputs.auto_merge_allowed }}
     steps:
-      - name: Dependabot metadata
-        id: metadata
-        if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
-        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-
       - name: Evaluate Dependabot policy
         id: evaluate
-        uses: actions/github-script@v7
-        env:
-          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+        uses: frasermolyneux/actions/dependabot-policy@dependabot-policy/v1.0
         with:
-          script: |
-            const prAuthor = context.payload.pull_request?.user?.login || '';
-            const isDependabot = prAuthor === 'dependabot[bot]';
-            const updateType = process.env.UPDATE_TYPE || '';
-            const allowedUpdateTypes = new Set([
-              'version-update:semver-patch',
-              'version-update:semver-minor',
-              'security-update:semver-patch',
-              'security-update:semver-minor'
-            ]);
-            const isMajorUpdate = updateType === 'version-update:semver-major' || updateType === 'security-update:semver-major';
-
-            let autoMergeAllowed = false;
-            let reason = 'Dependabot policy is not applicable for non-Dependabot pull requests.';
-
-            if (isDependabot) {
-              autoMergeAllowed = allowedUpdateTypes.has(updateType);
-              reason = autoMergeAllowed
-                ? `Dependabot auto-merge is allowed for update type: ${updateType || 'unknown'}.`
-                : `Dependabot auto-merge is blocked for update type: ${updateType || 'unknown'}. Manual review required.`;
-
-              if (isMajorUpdate) {
-                const existingLabels = (context.payload.pull_request.labels || []).map(label => label.name);
-                if (!existingLabels.includes('run-prd-plan')) {
-                  await github.rest.issues.addLabels({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: context.issue.number,
-                    labels: ['run-prd-plan']
-                  });
-                  reason += ' Added run-prd-plan label.';
-                }
-              }
-            }
-
-            core.info(reason);
-            core.setOutput('is_dependabot', isDependabot ? 'true' : 'false');
-            core.setOutput('auto_merge_allowed', autoMergeAllowed ? 'true' : 'false');
-
+          github-token: ${{ secrets.GITHUB_TOKEN }}
   dependabot:
     needs:
       - dependabot-policy
