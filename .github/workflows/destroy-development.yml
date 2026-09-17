@@ -1,0 +1,61 @@
+name: Destroy Development
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"
+
+permissions: {}
+
+jobs:
+  terraform-destroy-dev:
+    permissions:
+      contents: read
+      id-token: write
+    environment: Development
+    runs-on: ubuntu-latest
+    concurrency:
+      group: platform-hosting-dev
+      cancel-in-progress: false
+    steps:
+      - name: Assert development plan has no attachments
+        uses: frasermolyneux/actions/assert-app-service-plan-empty@assert-app-service-plan-empty/v1
+        with:
+          app-service-plan-id: /subscriptions/${{ vars.AZURE_SUBSCRIPTION_ID }}/resourceGroups/rg-platform-hosting-dev-swedencentral/providers/Microsoft.Web/serverfarms/asp-platform-hosting-dev-swedencentral-default
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Destroy development hosting
+        uses: frasermolyneux/actions/terraform-destroy@terraform-destroy/v1.3
+        with:
+          terraform-folder: "terraform"
+          terraform-var-file: "tfvars/dev.tfvars"
+          terraform-backend-file: "backends/dev.backend.hcl"
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          perform-checkout: "true"
+
+      - name: Verify development hosting cleanup
+        shell: bash
+        env:
+          APP_SERVICE_PLAN_NAME: asp-platform-hosting-dev-swedencentral-default
+          RESOURCE_GROUP: rg-platform-hosting-dev-swedencentral
+        run: |
+          set -euo pipefail
+
+          residual_output=$(az resource list \
+            --resource-group "$RESOURCE_GROUP" \
+            --query "[?name=='${APP_SERVICE_PLAN_NAME}' || (tags.Workload=='platform-hosting' && tags.Environment=='dev')].id" \
+            --output tsv \
+            --only-show-errors)
+
+          if [[ -n "$residual_output" ]]; then
+            echo "::error::Development hosting cleanup left residual resources."
+            echo "Residual resource IDs:"
+            printf '%s\n' "$residual_output"
+            exit 1
+          fi
+
+          echo "Development App Service plan and platform-hosting-owned resources are absent."

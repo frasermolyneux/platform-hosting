@@ -13,7 +13,8 @@ jobs:
     environment: Development
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.repository }}-dev
+      group: platform-hosting-dev
+      cancel-in-progress: false
     steps:
       - uses: frasermolyneux/actions/terraform-plan-and-apply@terraform-plan-and-apply/v1.4
         with:

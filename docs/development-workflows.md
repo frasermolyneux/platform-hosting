@@ -23,6 +23,10 @@ Terraform-only repository for platform-hosting shared App Service plans. Branch 
 
 ### On-Demand
 - **deploy-dev.yml**: Manual dispatch to refresh Development (plan+apply)
+- **destroy-development.yml**: Nightly and manual guarded Development destroy
+  - Refuses to destroy while any app or deployment slot is attached to the Development plan
+  - Uses the established Development backend and variable files
+  - Fails if the plan or any platform-hosting-owned Development resource remains afterward
 - **devops-secure-scanning.yml**: Security scanning per repo schedule
 
 ## Standard Developer Flow
@@ -61,7 +65,7 @@ graph TD
 
 ### Infrastructure Notes
 - Plans and applies use OIDC with environment-scoped variables: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`
-- Concurrency groups: `${{ github.repository }}-dev` and `${{ github.repository }}-prd`
+- Development deploy and destroy operations share the `platform-hosting-dev` concurrency group with cancellation disabled; Production uses `${{ github.repository }}-prd`
 - Prd plan is opt-in via label; dev plan always runs on PRs (except dependabot)
 
 ## Quick Reference
@@ -72,6 +76,7 @@ graph TD
 | PR validation      | pr-verify      | PR to main             | Dev plan      | ❌      |
 | Merge to main      | deploy-prd     | Push to main / Thu 3am | Dev+Prd apply | ✅      |
 | Manual dev refresh | deploy-dev     | Manual dispatch        | Dev apply     | ✅      |
+| Nightly dev cleanup | destroy-development | Daily / manual    | Dev destroy   | ✅      |
 
 ## Environment Variables
 

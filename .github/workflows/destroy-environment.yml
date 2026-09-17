@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.repository }}-${{ inputs.environment }}
+      cancel-in-progress: false
     steps:
       - uses: frasermolyneux/actions/terraform-destroy@terraform-destroy/v1.3
         with:
