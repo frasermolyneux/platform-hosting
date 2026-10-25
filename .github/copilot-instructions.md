@@ -12,7 +12,7 @@
 - `terraform/remote_state.tf` reads `platform-workloads` through Azure Storage using OIDC.
 - `terraform/backends/{dev,prd}.backend.hcl` and `terraform/tfvars/{dev,prd}.tfvars` must be selected as matching environment pairs.
 
-Terraform requires `>= 1.15.6`. Provider constraints are authoritative in `terraform/providers.tf`: AzureRM `~> 5.2.0` and AzureAD `~> 3.9.0`. Do not change provider constraints as part of unrelated work.
+CLI compatibility and provider constraints are authoritative in `terraform/providers.tf`; exact selections come from the committed root CLI pin and provider lock. Do not change provider constraints as part of unrelated work.
 
 Plans are map-driven. Add or change plan variants through `app_service_plans`; do not create parallel resource blocks. Preserve lower-case values and `asp-{workload}-{environment}-{location}-{key}` names. Resource-group lookup depends on location keys exposed by `platform-workloads`.
 
@@ -24,14 +24,14 @@ For Terraform changes:
 
 ```pwsh
 terraform -chdir=terraform fmt -check -recursive
-terraform -chdir=terraform init -backend=false -upgrade
+terraform -chdir=terraform init -backend=false -lockfile=readonly
 terraform -chdir=terraform validate
 ```
 
 Run a state-backed plan only for infrastructure-affecting changes:
 
 ```pwsh
-terraform -chdir=terraform init -reconfigure -backend-config=backends/dev.backend.hcl
+terraform -chdir=terraform init -lockfile=readonly -reconfigure -backend-config=backends/dev.backend.hcl
 terraform -chdir=terraform plan -var-file=tfvars/dev.tfvars
 ```
 
@@ -43,6 +43,6 @@ Substitute both `dev` values with `prd` for production. Never mix backend and tf
 - Do not apply, import, move, or remove state unless the task explicitly requires it.
 - Use OIDC or managed identity; do not add client secrets, tokens, or connection strings.
 - Treat SKU, capacity, zone, OS type, and plan removal as shared-hosting blast-radius changes.
-- `.terraform.lock.hcl` is generated locally, ignored, and never committed.
+- Commit each root's `.terraform-version` and `.terraform.lock.hcl`. Select the exact root CLI pin before invoking Terraform; normal initialization uses `-lockfile=readonly`. Regenerate provider selections only in a reviewed dependency-update PR; never commit state, plans, or `.terraform/`.
 
 Detailed workflow behavior is documented in [docs/development-workflows.md](../docs/development-workflows.md).

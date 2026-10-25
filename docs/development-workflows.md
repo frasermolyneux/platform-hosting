@@ -33,7 +33,7 @@ Terraform-only repository for platform-hosting shared App Service plans. Branch 
 
 ```bash
 # Common local validation
-terraform -chdir=terraform init -backend-config=backends/dev.backend.hcl
+terraform -chdir=terraform init -lockfile=readonly -backend-config=backends/dev.backend.hcl
 terraform -chdir=terraform plan -var-file=tfvars/dev.tfvars
 ```
 

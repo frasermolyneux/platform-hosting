@@ -22,14 +22,14 @@ For Terraform changes:
 
 ```pwsh
 terraform -chdir=terraform fmt -check -recursive
-terraform -chdir=terraform init -backend=false -upgrade
+terraform -chdir=terraform init -backend=false -lockfile=readonly
 terraform -chdir=terraform validate
 ```
 
 Run a state-backed plan only when Terraform behavior changes, selecting matching files:
 
 ```pwsh
-terraform -chdir=terraform init -reconfigure -backend-config=backends/dev.backend.hcl
+terraform -chdir=terraform init -lockfile=readonly -reconfigure -backend-config=backends/dev.backend.hcl
 terraform -chdir=terraform plan -var-file=tfvars/dev.tfvars
 ```
 
@@ -41,7 +41,7 @@ Use the `prd` backend and tfvars together for production changes.
 - Keep names and locations lower-case and preserve `asp-{workload}-{environment}-{location}-{key}` naming.
 - Preserve the `platform-workloads` remote-state shape and location-key matching.
 - Use OIDC or managed identity; never add client secrets or credentials.
-- `.terraform.lock.hcl` is local generated state, ignored, and not committed.
+- Commit each root's `.terraform-version` and `.terraform.lock.hcl`. Select the exact root CLI pin before invoking Terraform; normal initialization uses `-lockfile=readonly`. Regenerate provider selections only in a reviewed dependency-update PR; never commit state, plans, or `.terraform/`.
 - App Service plan changes can affect every workload hosted on the changed plan; review capacity, SKU, zone, and operating-system changes accordingly.
 
 See [README.md](README.md) and [docs/development-workflows.md](docs/development-workflows.md).
