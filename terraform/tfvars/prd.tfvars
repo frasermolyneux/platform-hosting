@@ -13,7 +13,7 @@ platform_workloads_state = {
 
 app_service_plans = {
   default = {
-    sku      = "B2"
+    sku      = "B1"
     os_type  = "Linux"
     location = "swedencentral"
   }

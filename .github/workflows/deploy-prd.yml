@@ -17,8 +17,22 @@ concurrency:
   group: ${{ github.workflow }}
 
 jobs:
+  detect-changes:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      terraform_dev: ${{ steps.dev-changes.outputs.terraform }}
+    steps:
+      - id: dev-changes
+        uses: frasermolyneux/actions/detect-changes@detect-changes/v1.0
+        with:
+          filters: |
+            terraform:terraform/*.tf,terraform/**/*.tf,terraform/*.tf.json,terraform/**/*.tf.json,terraform/backends/dev.backend.hcl,terraform/tfvars/dev.tfvars,terraform/.terraform-version,terraform/.terraform.lock.hcl
+
   terraform-plan-and-apply-dev:
-    if: github.event_name != 'schedule'
+    needs: detect-changes
+    if: github.event_name != 'schedule' && needs.detect-changes.outputs.terraform_dev == 'true'
     permissions:
       contents: read
       id-token: write
@@ -40,12 +54,14 @@ jobs:
   terraform-plan-and-apply-prd:
     if: |
       !failure() && !cancelled() &&
-      (needs.terraform-plan-and-apply-dev.result == 'success' || github.event_name == 'schedule')
+      needs.detect-changes.result == 'success'
     permissions:
       contents: read
       id-token: write
     environment: Production
-    needs: terraform-plan-and-apply-dev
+    needs:
+      - detect-changes
+      - terraform-plan-and-apply-dev
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.repository }}-prd

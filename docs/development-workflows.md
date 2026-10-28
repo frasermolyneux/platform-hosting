@@ -17,7 +17,9 @@ Terraform-only repository for platform-hosting shared App Service plans. Branch 
 
 ### Main Branch (on merge)
 - **deploy-prd.yml**: Promotion pipeline
-  - Dev plan/apply → Prd plan/apply
+  - Dev/shared Terraform changes: Dev plan/apply → Prd plan/apply
+  - Production-only tfvars/backend changes skip Development apply, avoiding unrelated recreation
+  - Explicit dispatch retains the full Dev → Prd path; schedules retain Production-only maintenance
   - Triggers: push to `main`, weekly schedule (Thursday 3am UTC), manual dispatch
   - Workflow-level concurrency prevents overlapping runs
 
@@ -53,13 +55,15 @@ graph TD
     I --> J
     J --> K[Merge PR]
     K --> L[deploy-prd triggers]
-    L --> M[Dev Apply]
-    M --> N[Prd Apply]
+    L --> M{Dev/shared Terraform changed?}
+    M -->|Yes| O[Dev Apply]
+    O --> N[Prd Apply]
+    M -->|No| N
     
     style D fill:#e1f5ff
     style F fill:#e1f5ff
     style L fill:#ffe1e1
-    style M fill:#90EE90
+    style O fill:#90EE90
     style N fill:#FFB6C1
 ```
 
@@ -74,7 +78,7 @@ graph TD
 | ------------------ | -------------- | ---------------------- | ------------- | ------ |
 | Feature commit     | build-and-test | Push to feature/*      | Dev plan      | ❌      |
 | PR validation      | pr-verify      | PR to main             | Dev plan      | ❌      |
-| Merge to main      | deploy-prd     | Push to main / Thu 3am | Dev+Prd apply | ✅      |
+| Merge to main      | deploy-prd     | Push to main / Thu 3am | Prd; Dev only for Dev/shared inputs | ✅      |
 | Manual dev refresh | deploy-dev     | Manual dispatch        | Dev apply     | ✅      |
 | Nightly dev cleanup | destroy-development | Daily / manual    | Dev destroy   | ✅      |
 
