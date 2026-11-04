@@ -14,6 +14,7 @@ Terraform-only repository for platform-hosting shared App Service plans. Branch 
   - Dev Terraform plan always runs (copilot/* included; dependabot skipped)
   - Prd Terraform plan requires `run-prd-plan` label
   - Concurrency groups serialize dev/prd operations
+- **dependabot-automerge.yml**: Enables squash auto-merge for non-draft PRs from Dependabot and `mx-io-idp-bot` when the shared policy permits it. Required checks and branch rules still apply.
 
 ### Main Branch (on merge)
 - **deploy-prd.yml**: Promotion pipeline
